@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/ASL_Speech.iml" filepath="$PROJECT_DIR$/.idea/ASL_Speech.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../OpenCV_Study/.idea/OpenCV_Study.iml" filepath="$PROJECT_DIR$/../OpenCV_Study/.idea/OpenCV_Study.iml" />
     </modules>
   </component>
 </project>
