@@ -11,7 +11,7 @@ cap.set(3, winWidth)
 cap.set(4, winHeight)
 cap.set(10, brightness)
 
-kernel = (5, 5)
+kernel = (7, 7)
 
 
 
@@ -24,13 +24,13 @@ def empty(a):
 cv2.namedWindow("TrackBars")
 cv2.resizeWindow("TrackBars", 640, 240)
 cv2.createTrackbar("cVal", "TrackBars", 0, 20, empty)
-cv2.createTrackbar("bSize", "TrackBars", 0, 20, empty)
+cv2.createTrackbar("bSize", "TrackBars", 0, 77, empty)
 
 
 def preprocessing(frame, value_BSize, cVal):
     imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # mask = cv2.inRange(imgHsv, lower, upper)
-    imgBlurred = cv2.GaussianBlur(imgGray, kernel, 3)
+    imgBlurred = cv2.GaussianBlur(imgGray, kernel, 4)
     gaussC = cv2.adaptiveThreshold(imgBlurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, value_BSize, cVal)
     imgDial = cv2.dilate(gaussC, kernel, iterations=3)
     imgErode = cv2.erode(imgDial, kernel, iterations=1)
@@ -43,12 +43,14 @@ def getContours(imPrePro):
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area > 60:
-            cv2.drawContours(imgCon, cnt, -1, (255, 0, 0), 3)
+            cv2.drawContours(imgCon, cnt, -1, (0, 255, 0), 2, cv2.FONT_HERSHEY_SIMPLEX)
+            peri = cv2.arcLength(cnt,True)
+            approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
 
 
 #######################################################################################################
 
-while (cap.isOpened()):
+while cap.isOpened():
     success, frame = cap.read()
     cVal = cv2.getTrackbarPos("cVal", "TrackBars")
     bVal = cv2.getTrackbarPos("bVal", "TrackBars")
