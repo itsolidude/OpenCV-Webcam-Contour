@@ -12,7 +12,8 @@ cap.set(4, winHeight)
 cap.set(10, brightness)
 
 kernel = (7, 7)
-
+handCascade = cv2.CascadeClassifier("resources/cascades/aGest.xml")
+imgBlank = np.zeros((640, 840, 3), np.uint8)
 
 
 #######################################################################
@@ -20,22 +21,29 @@ def empty(a):
     pass
 
 
-
 cv2.namedWindow("TrackBars")
 cv2.resizeWindow("TrackBars", 640, 240)
-cv2.createTrackbar("cVal", "TrackBars", 0, 20, empty)
-cv2.createTrackbar("bSize", "TrackBars", 0, 77, empty)
+cv2.createTrackbar("cVal", "TrackBars", 10, 40, empty)
+cv2.createTrackbar("bSize", "TrackBars", 77, 154, empty)
 
 
 def preprocessing(frame, value_BSize, cVal):
     imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # mask = cv2.inRange(imgHsv, lower, upper)
     imgBlurred = cv2.GaussianBlur(imgGray, kernel, 4)
-    gaussC = cv2.adaptiveThreshold(imgBlurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, value_BSize, cVal)
+    gaussC = cv2.adaptiveThreshold(imgBlurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, value_BSize,
+                                   cVal)
     imgDial = cv2.dilate(gaussC, kernel, iterations=3)
     imgErode = cv2.erode(imgDial, kernel, iterations=1)
 
     return imgDial
+
+
+def getHands():
+    imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    hands = handCascade.detectMultiScale(imgGray, 1.1, 9)
+    for (x, y, w, h) in hands:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
 
 
 def getContours(imPrePro):
@@ -44,8 +52,41 @@ def getContours(imPrePro):
         area = cv2.contourArea(cnt)
         if area > 60:
             cv2.drawContours(imgCon, cnt, -1, (0, 255, 0), 2, cv2.FONT_HERSHEY_SIMPLEX)
-            peri = cv2.arcLength(cnt,True)
+            peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+
+
+def stackImages(scale, imgArray):
+    rows = len(imgArray)
+    cols = len(imgArray[0])
+    rowsAvailable = isinstance(imgArray[0], list)
+    width = imgArray[0][0].shape[1]
+    height = imgArray[0][0].shape[0]
+    if rowsAvailable:
+        for x in range(0, rows):
+            for y in range(0, cols):
+                if imgArray[x][y].shape[:2] == imgArray[0][0].shape[:2]:
+                    imgArray[x][y] = cv2.resize(imgArray[x][y], (0, 0), None, scale, scale)
+                else:
+                    imgArray[x][y] = cv2.resize(imgArray[x][y], (imgArray[0][0].shape[1], imgArray[0][0].shape[0]),
+                                                None, scale, scale)
+                if len(imgArray[x][y].shape) == 2: imgArray[x][y] = cv2.cvtColor(imgArray[x][y], cv2.COLOR_GRAY2BGR)
+        imageBlank = np.zeros((height, width, 3), np.uint8)
+        hor = [imageBlank] * rows
+        hor_con = [imageBlank] * rows
+        for x in range(0, rows):
+            hor[x] = np.hstack(imgArray[x])
+        ver = np.vstack(hor)
+    else:
+        for x in range(0, rows):
+            if imgArray[x].shape[:2] == imgArray[0].shape[:2]:
+                imgArray[x] = cv2.resize(imgArray[x], (0, 0), None, scale, scale)
+            else:
+                imgArray[x] = cv2.resize(imgArray[x], (imgArray[0].shape[1], imgArray[0].shape[0]), None, scale, scale)
+            if len(imgArray[x].shape) == 2: imgArray[x] = cv2.cvtColor(imgArray[x], cv2.COLOR_GRAY2BGR)
+        hor = np.hstack(imgArray)
+        ver = hor
+    return ver
 
 
 #######################################################################################################
@@ -64,8 +105,12 @@ while cap.isOpened():
         imgCon = frame.copy()
         imPrePro = preprocessing(frame, value_BSize, cVal)
         getContours(imPrePro)
-        cv2.imshow("Preprocessed", imPrePro)
-        cv2.imshow("Original", imgCon)
+        getHands()
+        output = stackImages(0.5, ([imPrePro, imgCon, frame], [imgBlank, imgBlank, imgBlank]))
+        cv2.imshow("Output", output)
+        # cv2.imshow("Preprocessed", imPrePro)
+        # cv2.imshow("Original", imgCon)
+        # cv2.imshow("Detected Hands", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             cv2.destroyAllWindows()

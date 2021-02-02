@@ -1,4 +1,13 @@
 
-<python:S125"Remove this commented out code.(Í„Ï8•þŠ·ó.
-ypython:S117"[Rename this local variable "imgBlurred" to match the regular expression ^[_a-z][a-z0-9_]*$.(ôàü8üˆŒ·ó.
-{python:S117"XRename this local variable "imgGray" to match the regular expression ^[_a-z][a-z0-9_]*$.(áô®»úÿÿÿÿ8Êîð¶ó.
+npython:S117"PRename this parameter "cVal" to match the regular expression ^[_a-z][a-z0-9_]*$.(Â€ñ‚8Ç¿¤Øô.
+Ipython:S1481/"*Remove the unused local variable "approx".(º¢¥Å8Ý–¹øõ.
+{python:S117"XRename this local variable "imgGray" to match the regular expression ^[_a-z][a-z0-9_]*$.(áô®»úÿÿÿÿ8Êîð¶ó.
+Ppython:S1481#",Remove the unused local variable "imgErode".(ë¾Ù¹øÿÿÿÿ8Ç¿¤Øô.
+upython:S117 "WRename this local variable "gaussC" to match the regular expression ^[_a-z][a-z0-9_]*$.(—îÚ³8Ç¿¤Øô.
+{python:S117""XRename this local variable "imgDial" to match the regular expression ^[_a-z][a-z0-9_]*$.(þàñüúÿÿÿÿ8Ç¿¤Øô.
+<python:S125"Remove this commented out code.(Í„Ï8•þŠ·ó.
+|python:S117#"YRename this local variable "imgErode" to match the regular expression ^[_a-z][a-z0-9_]*$.(ë¾Ù¹øÿÿÿÿ8Ç¿¤Øô.
+upython:S117"WRename this parameter "value_BSize" to match the regular expression ^[_a-z][a-z0-9_]*$.(Â€ñ‚8Ç¿¤Øô.
+rpython:S117("TRename this parameter "imPrePro" to match the regular expression ^[_a-z][a-z0-9_]*$.( ©¯Á8Ç¿¤Øô.
+ppython:S1542("QRename function "getContours" to match the regular expression ^[a-z_][a-z0-9_]*$.( ©¯Á8Ç¿¤Øô.
+~python:S117"[Rename this local variable "imgBlurred" to match the regular expression ^[_a-z][a-z0-9_]*$.(»þÌ–üÿÿÿÿ8Ç¿¤Øô.
