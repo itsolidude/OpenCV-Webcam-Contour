@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 #####################################
 winWidth = 640
@@ -12,7 +13,7 @@ cap.set(4, winHeight)
 cap.set(10, brightness)
 
 kernel = (7, 7)
-handCascade = cv2.CascadeClassifier("resources/cascades/aGest.xml")
+faceCascade = cv2.CascadeClassifier("resources/cascades/haarcascade_frontalface_alt_tree.xml")
 imgBlank = np.zeros((640, 840, 3), np.uint8)
 
 
@@ -28,21 +29,22 @@ cv2.createTrackbar("bSize", "TrackBars", 77, 154, empty)
 
 
 def preprocessing(frame, value_BSize, cVal):
+    # imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    imgBlurred = cv2.GaussianBlur(frame, kernel, 4)
+    # gaussC = cv2.adaptiveThreshold(imgBlurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, value_BSize,
+    #                                cVal)
+    # imgDial = cv2.dilate(gaussC, kernel, iterations=3)
+    # imgErode = cv2.erode(imgDial, kernel, iterations=1)
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+    tv, thresh = cv2.threshold(lab[:,:,0], 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+    return thresh
+
+
+def getFace():
     imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # mask = cv2.inRange(imgHsv, lower, upper)
-    imgBlurred = cv2.GaussianBlur(imgGray, kernel, 4)
-    gaussC = cv2.adaptiveThreshold(imgBlurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, value_BSize,
-                                   cVal)
-    imgDial = cv2.dilate(gaussC, kernel, iterations=3)
-    imgErode = cv2.erode(imgDial, kernel, iterations=1)
-
-    return imgDial
-
-
-def getHands():
-    imgGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    hands = handCascade.detectMultiScale(imgGray, 1.1, 9)
-    for (x, y, w, h) in hands:
+    faces = faceCascade.detectMultiScale(imgGray, 2, 9)
+    for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 3)
 
 
@@ -53,7 +55,7 @@ def getContours(imPrePro):
         if area > 60:
             cv2.drawContours(imgCon, cnt, -1, (0, 255, 0), 2, cv2.FONT_HERSHEY_SIMPLEX)
             peri = cv2.arcLength(cnt, True)
-            approx = cv2.approxPolyDP(cnt, 0.02 * peri, True)
+            approx = cv2.approxPolyDP(cnt, 0.07 * peri, True)
 
 
 def stackImages(scale, imgArray):
@@ -89,13 +91,14 @@ def stackImages(scale, imgArray):
     return ver
 
 
-#######################################################################################################
+######################################################################################################
 
 while cap.isOpened():
     success, frame = cap.read()
     cVal = cv2.getTrackbarPos("cVal", "TrackBars")
     bVal = cv2.getTrackbarPos("bVal", "TrackBars")
     value_BSize = cv2.getTrackbarPos("bSize", "TrackBars")
+
     value_BSize = max(3, value_BSize)
     if (value_BSize % 2 == 0):
         value_BSize += 1
@@ -105,13 +108,14 @@ while cap.isOpened():
         imgCon = frame.copy()
         imPrePro = preprocessing(frame, value_BSize, cVal)
         getContours(imPrePro)
-        getHands()
-        output = stackImages(0.5, ([imPrePro, imgCon, frame], [imgBlank, imgBlank, imgBlank]))
+        getFace()
+        output = stackImages(0.7, ([imPrePro, imgCon, frame], [imgBlank, imgBlank, imgBlank]))
         cv2.imshow("Output", output)
-        # cv2.imshow("Preprocessed", imPrePro)
-        # cv2.imshow("Original", imgCon)
-        # cv2.imshow("Detected Hands", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             cv2.destroyAllWindows()
             break
+
+# lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+# tv, thresh = cv2.threshold(lab[:,:,0], 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+# plt.imshow(thresh)
